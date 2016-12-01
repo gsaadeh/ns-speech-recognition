@@ -1,0 +1,12 @@
+.vscode
+.idea
+.DS_Store
+node_modules/*
+!node_modules/nativescript-mqtt
+platforms/*
+!/platforms/ios/mobile/app/en.lproj
+hooks/*
+app/*.js
+app/*.js.map
+app/**/*.js
+app/**/*.js.map

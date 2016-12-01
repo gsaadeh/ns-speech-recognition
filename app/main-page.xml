@@ -1,0 +1,11 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo">
+  <DockLayout stretchLastChild="false">
+  <StackLayout dock="top">
+    <Label text="What do you want to say?" class="title"/>
+    <Label class="message" text="{{ speechText }}" />
+  </StackLayout>
+  <StackLayout dock="bottom">
+      <Button id="startRecording" text="{{ recordButtonText }}" isEnabled="{{ recordButtonEnabled }}" tap="recordButtonTapped" />
+  </StackLayout>
+</DockLayout>
+</Page>
