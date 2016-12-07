@@ -4,13 +4,13 @@
   "readme": "NativeScript Application",
   "repository": "<fill-your-repository-here>",
   "nativescript": {
-    "id": "tns com.falafel.nsspeech",
+    "id": "com.falafel.nsspeech",
     "tns-ios": {
-      "version": "2.5.0-2016-11-17-1"
+      "version": "2.4.0"
     }
   },
   "dependencies": {
-    "tns-core-modules": "^2.5.0-2016-11-02-4652"
+    "tns-core-modules": "^2.5.0-2016-12-07-4948"
   },
   "devDependencies": {
     "nativescript-dev-typescript": "^0.3.2",

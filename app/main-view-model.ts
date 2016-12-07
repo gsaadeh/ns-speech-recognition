@@ -2,8 +2,8 @@ import {Observable} from 'data/observable';
 
 export class SpeechViewModel extends Observable {
 
-    public static RECORD_START: string = 'Start Recording';
-    public static RECORD_STOP: string = 'Stop Recording';
+    public static RECORD_START: string = 'Click to Record';
+    public static RECORD_STOP: string = 'Click to Stop';
 
     constructor() {
         super();

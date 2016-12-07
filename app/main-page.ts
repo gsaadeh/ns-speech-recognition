@@ -7,7 +7,7 @@ declare var interop, NSLocale, SFSpeechRecognizer, SFSpeechAudioBufferRecognitio
 let page: Page, model: SpeechViewModel, recordButton: Button, locale, speechRecognizer, recognitionRequest, recognitionTask, audioEngine;
 
 // Event handler for Page 'navigatingTo' event attached in main-page.xml
-export function navigatingTo(args: EventData) {
+export function onPageLoaded(args: EventData) {
     // Get the event sender
     page = <Page>args.object;
     recordButton = <Button>page.getViewById('startRecording');
@@ -16,13 +16,15 @@ export function navigatingTo(args: EventData) {
     model = new SpeechViewModel();
     page.bindingContext = model;
 
-    // Initialize the speech recognizer and audio engines
+    // Initialize the speech recognizer and audio engine
     locale = new NSLocale('en-US');
-    speechRecognizer = new SFSpeechRecognizer(locale);
-    audioEngine = new AVAudioEngine();
+    speechRecognizer = SFSpeechRecognizer.alloc().initWithLocale(locale);
+    audioEngine = AVAudioEngine.new();
 
-    speechRecognizer.delegate = speechRecognizerDelegate;
+    //speechRecognizer.delegate = speechRecognizerDelegate;
 
+    // Ask for user's permission to use speech recognition
+    // The microphone button is disabled until the speech recognizer is activated
     SFSpeechRecognizer.requestAuthorization(function(authStatus) {
         switch (authStatus) {
             case SFSpeechRecognizerAuthorizationStatus.Authorized:
@@ -45,13 +47,22 @@ export function navigatingTo(args: EventData) {
 }
 
 export function recordButtonTapped() {
-    console.log('Audio engine running: ', audioEngine.isRunning);
-    if (audioEngine.isRunning) {
+
+    // Check if speech recognition is available on the device
+    if(!speechRecognizer.available){
+        alert('Speech Recognition is not available on this device.');
+        return;
+    }
+
+    /* If the audio engine is running then stop it and finish
+       the speech recognition request, otheriwse start recording */
+    if (audioEngine.running) {
         audioEngine.stop();
+
         if (recognitionRequest) {
             recognitionRequest.endAudio();
         }
-        model.set('recordButtonEnabled', false);
+
         model.set('recordButtonText', SpeechViewModel.RECORD_START);
     } else {
         startRecording();
@@ -65,7 +76,7 @@ export function startRecording() {
         recognitionTask = null;
     }
 
-    console.log('Initialize audio session');
+    // Initialize the audio session
     let audioSession = AVAudioSession.sharedInstance();
 
     let errorRef = new interop.Reference();
@@ -82,10 +93,12 @@ export function startRecording() {
 
     audioSession.setActiveError(true, null);
 
-    console.log('Create the recognition request');
-    let recognitionRequest = new SFSpeechAudioBufferRecognitionRequest();
+    // Create the recognition request
+    let recognitionRequest = SFSpeechAudioBufferRecognitionRequest.new();
 
+    // Check the audio engine's input mode to make sure we can record audio
     let inputNode = audioEngine.inputNode;
+
     if (!inputNode) {
         console.log('Audio engine has no input node');
     }
@@ -96,10 +109,8 @@ export function startRecording() {
 
     recognitionRequest.shouldReportPartialResults = true;
 
-    console.log('Start the recognition task');
-    console.log('Recognizer:', speechRecognizer);
-    console.log('Available:', speechRecognizer.available);
-    recognitionTask = speechRecognizer.recognitionTask(recognitionRequest, function(result, error) {
+    // Start the speech recognition task
+    recognitionTask = speechRecognizer.recognitionTaskWithRequestResultHandler(recognitionRequest, function(result, error) {
         let isFinal = false;
 
         if (result) {
@@ -109,7 +120,7 @@ export function startRecording() {
 
         if (error || isFinal) {
             audioEngine.stop();
-            inputNode.removeTap(0);
+            inputNode.removeTapOnBus(0);
 
             recognitionRequest = null;
             recognitionTask = null;
@@ -118,18 +129,18 @@ export function startRecording() {
         }
     });
 
-    let recordingFormat = inputNode.outputFormat(0);
-    inputNode.installTap(0, 1024, recordingFormat, function(buffer, when) {
+    inputNode.installTapOnBusBufferSizeFormatBlock(0, 1024, inputNode.outputFormatForBus(0), function(buffer, when) {
         if (recognitionRequest) {
-            recognitionRequest.append(buffer);
+            recognitionRequest.appendAudioPCMBuffer(buffer);
         }
     });
 
     audioEngine.prepare();
 
     try {
-        audioEngine.start();
+        audioEngine.startAndReturnError();
     } catch (ex) {
+        console.log(ex);
         console.log('audioEngine couldn\'t start because of an error.');
     }
 
