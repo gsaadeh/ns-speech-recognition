@@ -6,3 +6,5 @@ NativeScript application.
 You will need a physical device running iOS 10+ in order to use the application.
 
 The application is using the @next version of the tns modules.
+
+![Screenshot](screenshot.png)
