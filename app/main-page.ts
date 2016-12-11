@@ -21,7 +21,7 @@ export function onPageLoaded(args: EventData) {
     speechRecognizer = SFSpeechRecognizer.alloc().initWithLocale(locale);
     audioEngine = AVAudioEngine.new();
 
-    //speechRecognizer.delegate = speechRecognizerDelegate;
+    speechRecognizer.delegate = speechRecognizerDelegate;
 
     // Ask for user's permission to use speech recognition
     // The microphone button is disabled until the speech recognizer is activated
